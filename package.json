@@ -1,0 +1,25 @@
+{
+  "name": "rocketz",
+  "version": "0.1.0",
+  "description": "Upload local files to CDNs",
+  "homepage": "https://github.com/ourai/rocketz",
+  "keywords": [
+    "rocketz",
+    "uploader",
+    "upload",
+    "cdn",
+    "cloud"
+  ],
+  "author": "Ourai Lin <ourairyu@hotmail.com> (http://ourai.ws/)",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ourai/rocketz.git"
+  },
+  "bugs": "https://github.com/ourai/rocketz/issues",
+  "main": "index.js",
+  "engines": "node >= 0.10.0",
+  "dependencies": {
+    "lodash": "^4.1.0"
+  },
+  "license": "MIT"
+}

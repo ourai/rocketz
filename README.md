@@ -1,2 +1,3 @@
-# rocketz
-Upload local files to CDNs
+# RocketZ
+
+将静态资源从「地面」发射到「云端」！
