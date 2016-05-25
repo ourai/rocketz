@@ -1,3 +1,3 @@
 "use strict";
 
-console.log("Hello!");
+module.exports = require("./lib/index");
