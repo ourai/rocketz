@@ -17,6 +17,10 @@
   },
   "bugs": "https://github.com/ourai/rocketz/issues",
   "main": "index.js",
+  "scripts": {
+    "prepublish": "mv lib src && gulp compile",
+    "postpublish": "rm -rf lib && mv src lib"
+  },
   "engines": "node >= 0.10.0",
   "devDependencies": {
     "babel-preset-es2015": "^6.9.0",
