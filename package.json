@@ -18,14 +18,15 @@
   "bugs": "https://github.com/ourai/rocketz/issues",
   "main": "index.js",
   "scripts": {
-    "prepublish": "mv lib src && gulp compile",
+    "prebuild": "mv lib src",
+    "build": "babel src -d lib --presets=es2015",
+    "prepublish": "npm run build",
     "postpublish": "rm -rf lib && mv src lib"
   },
   "engines": "node >= 0.10.0",
   "devDependencies": {
-    "babel-preset-es2015": "^6.9.0",
-    "gulp": "^3.9.1",
-    "gulp-babel": "^6.1.2"
+    "babel-cli": "^6.9.0",
+    "babel-preset-es2015": "^6.9.0"
   },
   "dependencies": {
     "lodash": "^4.1.0",

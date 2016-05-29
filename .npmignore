@@ -5,5 +5,4 @@ node_modules
 npm-debug.log
 
 src
-gulpfile.js
 *.md
