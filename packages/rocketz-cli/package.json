@@ -21,7 +21,9 @@
   "bugs": "https://github.com/ourai/rocketz/issues",
   "main": "index.js",
   "engines": "node >= 0.10.0",
-  "bin": "./bin/rocketz.js",
+  "bin": {
+    "rocketz": "./bin/rocketz.js"
+  },
   "dependencies": {
     "lodash": "^4.1.0",
     "qiniu": "^6.1.11",
