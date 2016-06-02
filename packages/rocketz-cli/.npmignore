@@ -4,8 +4,5 @@
 node_modules
 npm-debug.log
 
-.idea
-.editorconfig
-
 src
 *.md
