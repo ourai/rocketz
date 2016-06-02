@@ -1,0 +1,31 @@
+{
+  "name": "rocketz-cli",
+  "version": "0.3.8",
+  "description": "CLI tool for RocketZ",
+  "homepage": "https://github.com/ourai/rocketz",
+  "keywords": [
+    "cdn",
+    "assets",
+    "upload",
+    "local",
+    "cloud",
+    "rocket",
+    "qiniu",
+    "wantu"
+  ],
+  "author": "Ourai Lin <ourairyu@hotmail.com> (http://ourai.ws/)",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ourai/rocketz.git"
+  },
+  "bugs": "https://github.com/ourai/rocketz/issues",
+  "main": "index.js",
+  "engines": "node >= 0.10.0",
+  "bin": "./bin/rocketz.js",
+  "dependencies": {
+    "lodash": "^4.1.0",
+    "qiniu": "^6.1.11",
+    "wantu": "*"
+  },
+  "license": "MIT"
+}
