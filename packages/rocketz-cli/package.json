@@ -27,6 +27,7 @@
   "dependencies": {
     "lodash": "^4.1.0",
     "qiniu": "^6.1.11",
+    "rocketz-core": "^0.4.3",
     "wantu": "*"
   },
   "license": "MIT"
