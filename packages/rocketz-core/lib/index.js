@@ -157,6 +157,11 @@ rocketz.run = function() {
 };
 
 /**
+ * 设置 CDN 配置
+ */
+rocketz.setCloud = confParser.setConfig;
+
+/**
  * 获取 CDN 配置
  */
 rocketz.getCloud = confParser.getConfig;
