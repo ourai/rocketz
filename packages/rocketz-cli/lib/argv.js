@@ -4,7 +4,7 @@ var fs = require("fs");
 var path = require("path");
 var readline = require("readline");
 
-var confParser = require("./config");
+var rocketz = require("rocketz-core");
 
 var pkg = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "package.json"), "utf-8"));
 
@@ -109,10 +109,10 @@ module.exports = function( args ) {
   else if ( /^\-\-[a-z]{2,}$/.test(subCmd) ) {
     switch(subCmd.slice(2)) {
       case "config":
-        confParser.setConfig(args[1]);
+        rocketz.setCloud(args[1]);
         break;
       case "view":
-        console.log(confParser.getConfig(args[1]) || {});
+        console.log(rocketz.getCloud(args[1]) || {});
         break;
       default:
         invalidCmd();

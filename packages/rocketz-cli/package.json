@@ -4,14 +4,14 @@
   "description": "CLI tool for RocketZ",
   "homepage": "https://github.com/ourai/rocketz",
   "keywords": [
-    "cdn",
-    "assets",
+    "rocketz",
+    "uploader",
     "upload",
-    "local",
+    "cdn",
     "cloud",
-    "rocket",
-    "qiniu",
-    "wantu"
+    "cli",
+    "command-line",
+    "command"
   ],
   "author": "Ourai Lin <ourairyu@hotmail.com> (http://ourai.ws/)",
   "repository": {
@@ -25,10 +25,7 @@
     "rocketz": "./bin/rocketz.js"
   },
   "dependencies": {
-    "lodash": "^4.1.0",
-    "qiniu": "^6.1.11",
-    "rocketz-core": "^0.4.4",
-    "wantu": "*"
+    "rocketz-core": "^0.4.4"
   },
   "license": "MIT"
 }
