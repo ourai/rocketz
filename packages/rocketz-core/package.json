@@ -1,6 +1,6 @@
 {
   "name": "rocketz-core",
-  "version": "0.4.4",
+  "version": "0.4.5",
   "description": "Upload local files to CDNs",
   "homepage": "https://github.com/ourai/rocketz",
   "keywords": [
