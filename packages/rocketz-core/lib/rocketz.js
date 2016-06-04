@@ -6,7 +6,7 @@ const readline = require("readline");
 
 const _ = require("lodash");
 
-const Rocket = require("./rocket");
+const Rocket = require("./file");
 const Qiniu = require("../cdn/qiniu");
 const Wantu = require("../cdn/wantu");
 
