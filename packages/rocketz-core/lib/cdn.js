@@ -84,7 +84,7 @@ function retry( cloud ) {
   }
 }
 
-module.exports = class Cloud {
+module.exports = class CDN {
   constructor( settings ) {
     _.assign(this, DEFAULTS, {
       // fragment: 1,

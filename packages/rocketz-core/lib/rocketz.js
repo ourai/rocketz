@@ -2,168 +2,125 @@
 
 const fs = require("fs");
 const path = require("path");
-const readline = require("readline");
 
-const _ = require("lodash");
+const fc = require("./collector");
+const CDN = require("./cdn");
 
-const Rocket = require("./file");
-const Qiniu = require("../cdn/qiniu");
-const Wantu = require("../cdn/wantu");
+const DEFAULTS = {
+    files: [],      // 限制上传的文件名（无扩展名）
+    exts: [],       // 限制上传的扩展名（裸扩展名）
+    deep: true,     // 是否深度查找
+    local: "",      // 本地文件所在目录
+    remote: "",     // 远程文件存放目录
+    fragment: 1,    // 分段上传时每段的文件数量
+    retryCount: 0,  // 上传失败时重试上传次数
+    cdn: "",        // 要上传的 CDN 名字
+    accessKey: "",  // 上传到 CDN 时所需的 Access Key
+    secretKey: "",  // 上传到 CDN 时所需的 Secret Key
+    space: ""       // 上传到 CDN 的空间名
+  };
+const VALID_PLUGINS = require("./resolve")();
+const VALID_CDN = {};
 
-const log = require("./log");
-const util = require("./util");
-const confParser = require("./config");
+// 挂载插件
+Object.keys(VALID_PLUGINS).forEach(function( pkgPath ) {
+    let descriptor = require(VALID_PLUGINS[pkgPath]);
 
-const rocket = new Rocket();
+    if ( descriptor && descriptor.type === "cdn" ) {
+      VALID_CDN[descriptor.name] = descriptor.register(CDN)
+    }
+  });
 
-var rocketz = {};
+function toArr( obj ) {
+  if ( !Array.isArray(obj) ) {
+    if ( typeof obj === "string") {
+      obj = obj === "" ? [] : obj.split(",");
+    }
+    else {
+      obj = [].concat(obj);
+    }
+  }
 
-function minimalValue( value, minimal ) {
-  return _.isNumber(value) && value > minimal ? value : minimal;
+  return obj;
 }
 
 /**
- * 初始化
+ * 设置不低于最小值的值
+ *
+ * @param value
+ * @param minimal
+ * @returns {number|*}
  */
-rocketz.init = function( conf ) {
-  var targetFiles = util.toArr(conf.files || []);
-  var isDeep = conf.deep !== false;
-  var clouds = ["qiniu", "wantu"];
-  var assets;
+function minimalValue( value, minimal ) {
+  value = Number(value);
 
-  rocket.setExts(conf.exts);
-
-  if ( !(conf && typeof conf === "object") ) {
-    conf = {};
-  }
-
-  clouds.forEach(function( cloudType ) {
-    var c = conf[cloudType];
-
-    if ( c !== false && !_.isPlainObject(c) ) {
-      conf[cloudType] = confParser.getConfig(cloudType);
-    }
-  });
-
-  assets = rocket.collect(conf.assets);
-
-  if ( targetFiles.length ) {
-    this.__assets = assets.filter(function( file ) {
-      return targetFiles.indexOf(path.basename(file, path.extname(file))) > -1 && (isDeep || path.dirname(file) === ".");
-    });
-  }
-  else {
-    this.__assets = assets;
-  }
-
-  this.__conf = conf;
-  this.__clouds = clouds;
-};
+  return !isNaN(value) && value > minimal ? value : minimal;
+}
 
 /**
- * 预览
+ * 合并配置
+ *
+ * @param target
+ * @param source
+ * @returns {{}}
  */
-rocketz.preview = function() {
-  var assets = this.__assets;
+function mergeSettings( target, source ) {
+  let s = {};
 
-  if ( assets.length === 0 ) {
-    log.empty();
-
-    return false;
+  if ( typeof target !== "object" ) {
+    return s;
   }
-  else {
-    log.files(assets, path.resolve(this.__conf.assets));
+
+  Object.keys(source).forEach(function( k ) {
+    s[k] = target.hasOwnProperty(k) ? target[k] : source[k];
+  });
+
+  return s;
+}
+
+module.exports = class RocketZ {
+  constructor( settings ) {
+    let s = mergeSettings(settings, DEFAULTS);
+
+    s.deep = s.deep !== false;
+    s.files = fc.collect(path.resolve(s.local), toArr(s.files), toArr(s.exts), s.deep);
+
+    this.__settings = s;
+  }
+
+  init() {}
+
+  /**
+   * 列出所有可上传文件
+   *
+   * @returns {Array.<*>}
+   */
+  list() {
+    return [].concat(this.__settings.files);
+  }
+
+  /**
+   * 上传
+   *
+   * @returns {boolean}
+   */
+  upload( settings ) {
+    let s = mergeSettings(settings, this.__settings);
+
+    s.cdn = String(s.cdn);
+
+    if ( Object.keys(VALID_CDN).length === 0 || !VALID_CDN.hasOwnProperty(s.cdn) || s.files.length === 0 ) {
+      return false;
+    }
+
+    [{k: "fragment", v: 1}, {k: "retryCount", v: 0}].forEach(function( o ) {
+      s[o.k] = minimalValue(s[o.k], o.v);
+    });
+
+    s.local = path.resolve(s.local);
+
+    (new VALID_CDN[s.cdn](s)).upload();
 
     return true;
   }
-};
-
-/**
- * 上传
- */
-rocketz.upload = function() {
-  var conf = this.__conf;
-  var assets = this.__assets;
-  var constructors = {
-    qiniu: Qiniu,
-    wantu: Wantu
-  };
-  var spaceKeys = {
-    qiniu: "bucket",
-    wantu: "namespace"
-  };
-
-  if ( !conf ) {
-    return false;
-  }
-
-  this.__clouds.forEach(function( cloud ) {
-    var cloudConf = conf[cloud];
-
-    if ( cloudConf ) {
-      (new constructors[cloud]({
-          ACCESS_KEY: cloudConf.access_key,
-          SECRET_KEY: cloudConf.secret_key,
-          space: cloudConf[spaceKeys[cloud]],
-          fragment: minimalValue(conf.fragment, 1),
-          retryCount: minimalValue(conf.retry, 0),
-          interactive: conf.interactive !== false,
-          files: assets,
-          local: path.resolve(conf.assets),
-          remote: conf.remote || ""
-        }))
-        .upload();
-    }
-  });
-
-  return true;
-};
-
-/**
- * 运行
- */
-rocketz.run = function() {
-  var assetCount = this.__assets.length;
-  var rl;
-
-  if ( this.__conf ) {
-    if ( this.__conf.interactive === false ) {
-      rocketz.upload();
-    }
-    else {
-      rl = readline.createInterface({
-        input: process.stdin,
-        output: process.stdout
-      });
-
-      rl.setPrompt(
-        "\nWould you want to upload the " + (assetCount === 1 ? "file" : (assetCount + " files")) + " above?" +
-        " 'Y' to continue or any other key to quit:"
-      );
-      rl.prompt();
-
-      rl.on("line", function( line ) {
-        if ( line.trim().toLowerCase() === "y" ) {
-          rocketz.upload();
-        }
-        else {
-          log.abort();
-        }
-
-        rl.close();
-      });
-    }
-  }
-};
-
-/**
- * 设置 CDN 配置
- */
-rocketz.setCloud = confParser.setConfig;
-
-/**
- * 获取 CDN 配置
- */
-rocketz.getCloud = confParser.getConfig;
-
-module.exports = rocketz;
+}
