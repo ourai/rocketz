@@ -6,8 +6,8 @@ const path = require("path");
 const WantuSDK = require("wantu");
 const _ = require("lodash");
 
-const log = require("./log");
-const Cloud = require("./cloud");
+const log = require("../lib/log");
+const Cloud = require("../lib/cloud");
 
 module.exports = class Wantu extends Cloud {
   constructor( settings ) {

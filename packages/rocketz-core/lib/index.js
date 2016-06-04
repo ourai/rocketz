@@ -7,8 +7,8 @@ const readline = require("readline");
 const _ = require("lodash");
 
 const Rocket = require("./rocket");
-const Qiniu = require("./qiniu");
-const Wantu = require("./wantu");
+const Qiniu = require("../cdn/qiniu");
+const Wantu = require("../cdn/wantu");
 
 const log = require("./log");
 const util = require("./util");

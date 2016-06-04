@@ -7,8 +7,8 @@ const readline = require("readline");
 const qiniu = require("qiniu");
 const _ = require("lodash");
 
-const log = require("./log");
-const Cloud = require("./cloud");
+const log = require("./../lib/log");
+const Cloud = require("./../lib/cloud");
 
 module.exports = class Qiniu extends Cloud {
   constructor( settings ) {
