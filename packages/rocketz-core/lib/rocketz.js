@@ -3,21 +3,25 @@
 const fs = require("fs");
 const path = require("path");
 
+const _ = require("lodash");
+
 const fc = require("./collector");
 const CDN = require("./cdn");
 
-const DEFAULTS = {
-    files: [],      // 限制上传的文件名（无扩展名）
-    exts: [],       // 限制上传的扩展名（裸扩展名）
-    deep: true,     // 是否深度查找
-    local: "",      // 本地文件所在目录
-    remote: "",     // 远程文件存放目录
-    fragment: 1,    // 分段上传时每段的文件数量
-    retryCount: 0,  // 上传失败时重试上传次数
-    cdn: "",        // 要上传的 CDN 名字
-    accessKey: "",  // 上传到 CDN 时所需的 Access Key
-    secretKey: "",  // 上传到 CDN 时所需的 Secret Key
-    space: ""       // 上传到 CDN 的空间名
+const ROCKETZ_DEFAULTS = {
+    cdn: {}             // 要上传的 CDN 名字
+  };
+const CDN_DEFAULTS = {
+    accessKey: "",      // Access Key
+    secretKey: "",      // Secret Key
+    space: "",          // 空间名
+    remote: "",         // 远程文件存放目录
+    local: "",          // 本地文件所在目录
+    files: [],          // 限制上传的文件名（无扩展名）
+    exts: [],           // 限制上传的扩展名（裸扩展名）
+    deep: true,         // 是否深度查找
+    fragment: 1,        // 分段上传时每段的文件数量
+    retryCount: 0       // 上传失败时重试上传次数
   };
 const VALID_PLUGINS = require("./resolve")();
 const VALID_CDN = {};
@@ -31,9 +35,15 @@ Object.keys(VALID_PLUGINS).forEach(function( pkgPath ) {
     }
   });
 
+/**
+ * 将目标对象转化为数组
+ *
+ * @param obj
+ * @returns {*}
+ */
 function toArr( obj ) {
   if ( !Array.isArray(obj) ) {
-    if ( typeof obj === "string") {
+    if ( _.isString(obj) ) {
       obj = obj === "" ? [] : obj.split(",");
     }
     else {
@@ -58,68 +68,178 @@ function minimalValue( value, minimal ) {
 }
 
 /**
- * 合并配置
- *
- * @param target
- * @param source
- * @returns {{}}
+ * 判断 CDN 是否有效
+ * 
+ * @param cdn
+ * @param cdnCollection
+ * @returns {boolean}
  */
-function mergeSettings( target, source ) {
-  let s = {};
+function isValidCdn( cdn, cdnCollection = VALID_CDN ) {
+  return _.isString(cdn) && cdnCollection.hasOwnProperty(cdn);
+}
 
-  if ( typeof target !== "object" ) {
-    return s;
+/**
+ * 判断 CDN 的配置是否有效
+ *
+ * @param settings
+ * @returns {boolean}
+ */
+function isValidCdnSettings( settings ) {
+  if ( !_.isPlainObject(settings) ) {
+    return false;
   }
 
-  Object.keys(source).forEach(function( k ) {
-    s[k] = target.hasOwnProperty(k) ? target[k] : source[k];
+  let settingKeys = Object.keys(settings);
+
+  return ["accessKey", "secretKey"].every(function( k ) {
+      return settingKeys.includes(k);
+    });
+}
+
+/**
+ * 整理成所需要的 CDN 配置
+ * 
+ * @param settings
+ */
+function resolveCdnSettings( ...settings ) {
+  let newestSettings = settings[settings.length - 1];
+  let refactor = ["files", "exts", "local", "deep"].map(function( p ) {
+      return {
+        key: p,
+        value: newestSettings[p],
+        handler: (p === "local" ? path.resolve : (p === "deep" ? function( idDeep ) {
+          return idDeep !== false;
+        } : toArr))
+      };
+    });
+  let cdnSettings = _.assign(...settings);
+  let isCollect = false;
+
+  // 获取要上传的文件
+  refactor.forEach(function( o ) {
+    if ( newestSettings.hasOwnProperty(o.key) ) {
+      isCollect = true;
+      cdnSettings[o.key] = o.handler(o.value);
+    }
   });
 
-  return s;
+  [{k: "fragment", v: 1}, {k: "retryCount", v: 0}].forEach(function( o ) {
+    cdnSettings[o.k] = minimalValue(cdnSettings[o.k], o.v);
+  });
+
+  if ( isCollect ) {
+    cdnSettings.__files = fc.collect(cdnSettings.local, cdnSettings.files, cdnSettings.exts, cdnSettings.deep);
+  }
+
+  return cdnSettings;
 }
 
 module.exports = class RocketZ {
-  constructor( settings ) {
-    let s = mergeSettings(settings, DEFAULTS);
+  /**
+   * 初始化配置信息
+   *
+   * @param rocketzSettings
+   */
+  constructor( rocketzSettings ) {
+    let s = resolveCdnSettings({}, ROCKETZ_DEFAULTS, CDN_DEFAULTS, rocketzSettings);
 
-    s.deep = s.deep !== false;
-    s.files = fc.collect(path.resolve(s.local), toArr(s.files), toArr(s.exts), s.deep);
+    // 全局配置中不需要保留 AK 和 SK
+    ["accessKey", "secretKey"].forEach(function( k ) {
+      delete s[k];
+    });
 
     this.__settings = s;
   }
 
-  init() {}
+  /**
+   * 初始化 CDN 的配置
+   *
+   * @param cdn
+   * @param cdnSettings
+   */
+  init( cdn, cdnSettings ) {
+    let cdns = [];
+
+    if ( _.isString(cdn) ) {
+      cdns.push({name: cdn, settings: cdnSettings});
+    }
+    else if ( Array.isArray(cdn) ) {
+      cdns = cdn;
+    }
+
+    cdns.forEach(( c ) => {
+      if ( isValidCdn(c.name) && isValidCdnSettings(c.settings) ) {
+        let _s = resolveCdnSettings({}, this.__settings, c.settings);
+
+        Object.keys(ROCKETZ_DEFAULTS).forEach(function( p ) {
+          delete _s[p];
+        });
+
+        this.__settings.cdn[c.name] = _s;
+      }
+    });
+  }
 
   /**
    * 列出所有可上传文件
    *
    * @returns {Array.<*>}
    */
-  list() {
-    return [].concat(this.__settings.files);
-  }
+  // list() {
+  //   return [].concat(this.__settings.files);
+  // }
 
   /**
    * 上传
    *
+   * @param settings
    * @returns {boolean}
    */
   upload( settings ) {
-    let s = mergeSettings(settings, this.__settings);
+    let rs = this.__settings;       // 'rs' is short for 'rocketzSettings'
+    let cs = [];                    // 'cs' is short for 'cdnSettings'
 
-    s.cdn = String(s.cdn);
+    // 没指定 CDN 时上传到所有可用的 CDN
+    if ( settings == null ) {
+      settings = Object.keys(rs.cdn);
+    }
 
-    if ( Object.keys(VALID_CDN).length === 0 || !VALID_CDN.hasOwnProperty(s.cdn) || s.files.length === 0 ) {
+    // 获取可用的 CDN 配置信息
+    toArr(settings).forEach(function( s ) {
+      let _s = {};
+
+      if ( isValidCdn(s, rs.cdn) ) {
+        _s.name = s;
+        _s.settings = _.assign({}, rs.cdn[s]);
+      }
+      else if ( isValidCdn(s.name, rs.cdn) && isValidCdnSettings(s) ) {
+        _s.name = s.name;
+        _s.settings = resolveCdnSettings({}, rs.cdn[s.name], s);
+
+        // 删除不必要的属性
+        ["name"].forEach(function( p ) {
+          delete _s.settings[p];
+        });
+      }
+
+      if ( Object.keys(_s).length > 0 ) {
+        cs.push(_s);
+      }
+    });
+
+    if ( cs.length === 0 ) {
       return false;
     }
 
-    [{k: "fragment", v: 1}, {k: "retryCount", v: 0}].forEach(function( o ) {
-      s[o.k] = minimalValue(s[o.k], o.v);
+    cs.forEach(function( s ) {
+      let Uploader = VALID_CDN[s.name];
+      let _s = s.settings;
+
+      _s.files = _s.__files;
+      delete _s.__files;
+
+      (new Uploader(_s)).upload();
     });
-
-    s.local = path.resolve(s.local);
-
-    (new VALID_CDN[s.cdn](s)).upload();
 
     return true;
   }
