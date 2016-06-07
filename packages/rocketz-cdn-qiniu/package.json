@@ -1,0 +1,28 @@
+{
+  "name": "rocketz-cdn-qiniu",
+  "version": "0.0.1",
+  "description": "Qiniu uploader for Rocketz",
+  "homepage": "https://github.com/ourai/rocketz",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "rocketz",
+    "uploader",
+    "upload",
+    "cdn",
+    "cloud",
+    "qiniu"
+  ],
+  "author": "Ourai Lin <ourairyu@hotmail.com> (http://ourai.ws/)",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ourai/rocketz.git"
+  },
+  "bugs": "https://github.com/ourai/rocketz/issues",
+  "license": "MIT",
+  "dependencies": {
+    "qiniu": "^6.1.11"
+  }
+}

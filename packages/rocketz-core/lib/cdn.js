@@ -66,7 +66,7 @@ function sendChunked( cloud ) {
  * @param cloud
  */
 function retry( cloud ) {
-  var files = cloud.failedFiles;
+  let files = cloud.failedFiles;
 
   if ( files.length === 0 ) {
     return;
@@ -84,7 +84,7 @@ function retry( cloud ) {
   }
 }
 
-module.exports = class Cloud {
+module.exports = class CDN {
   constructor( settings ) {
     _.assign(this, DEFAULTS, {
       // fragment: 1,
@@ -115,7 +115,7 @@ module.exports = class Cloud {
    * 将大批量文件切割
    */
   chunk() {
-    var f = this.fragment;
+    let f = this.fragment;
 
     if (!(_.isNumber(f) && f > 1)) {
       return false;
