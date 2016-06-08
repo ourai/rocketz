@@ -36,6 +36,18 @@ Object.keys(VALID_PLUGINS).forEach(function( pkgPath ) {
   });
 
 /**
+ * 设置不可枚举的属性
+ *
+ * @param obj
+ * @param prop
+ * @param value
+ * @returns {Object}
+ */
+function setPropUnenumerable( obj, prop, value ) {
+  return Object.defineProperty(obj, prop, {enumerable: false, value});
+}
+
+/**
  * 将目标对象转化为数组
  *
  * @param obj
@@ -129,7 +141,7 @@ function resolveCdnSettings( ...settings ) {
   });
 
   if ( isCollect ) {
-    cdnSettings.__files = fc.collect(cdnSettings.local, cdnSettings.files, cdnSettings.exts, cdnSettings.deep);
+    setPropUnenumerable(cdnSettings, "__files", fc.collect(cdnSettings.local, cdnSettings.files, cdnSettings.exts, cdnSettings.deep));
   }
 
   return cdnSettings;
@@ -149,7 +161,7 @@ module.exports = class RocketZ {
       delete s[k];
     });
 
-    this.__settings = s;
+    setPropUnenumerable(this, "__settings", s);
   }
 
   /**
