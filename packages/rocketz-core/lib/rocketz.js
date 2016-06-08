@@ -36,6 +36,18 @@ Object.keys(VALID_PLUGINS).forEach(function( pkgPath ) {
   });
 
 /**
+ * 设置不可枚举的属性
+ *
+ * @param obj
+ * @param prop
+ * @param value
+ * @returns {Object}
+ */
+function setPropUnenumerable( obj, prop, value ) {
+  return Object.defineProperty(obj, prop, {enumerable: false, value});
+}
+
+/**
  * 将目标对象转化为数组
  *
  * @param obj
@@ -69,7 +81,7 @@ function minimalValue( value, minimal ) {
 
 /**
  * 判断 CDN 是否有效
- * 
+ *
  * @param cdn
  * @param cdnCollection
  * @returns {boolean}
@@ -98,7 +110,7 @@ function isValidCdnSettings( settings ) {
 
 /**
  * 整理成所需要的 CDN 配置
- * 
+ *
  * @param settings
  */
 function resolveCdnSettings( ...settings ) {
@@ -107,9 +119,10 @@ function resolveCdnSettings( ...settings ) {
       return {
         key: p,
         value: newestSettings[p],
-        handler: (p === "local" ? path.resolve : (p === "deep" ? function( idDeep ) {
-          return idDeep !== false;
-        } : toArr))
+        handler: (p === "local" ? path.resolve :
+          (p === "deep" ? function( idDeep ) {
+            return idDeep !== false;
+          } : toArr))
       };
     });
   let cdnSettings = _.assign(...settings);
@@ -128,7 +141,7 @@ function resolveCdnSettings( ...settings ) {
   });
 
   if ( isCollect ) {
-    cdnSettings.__files = fc.collect(cdnSettings.local, cdnSettings.files, cdnSettings.exts, cdnSettings.deep);
+    setPropUnenumerable(cdnSettings, "__files", fc.collect(cdnSettings.local, cdnSettings.files, cdnSettings.exts, cdnSettings.deep));
   }
 
   return cdnSettings;
@@ -148,7 +161,7 @@ module.exports = class RocketZ {
       delete s[k];
     });
 
-    this.__settings = s;
+    setPropUnenumerable(this, "__settings", s);
   }
 
   /**
@@ -181,13 +194,31 @@ module.exports = class RocketZ {
   }
 
   /**
-   * 列出所有可上传文件
+   * 列出可上传文件
    *
-   * @returns {Array.<*>}
+   * @param cdn
+   * @param forceMap      强制以 map 形式输出
+   * @returns {{}}
    */
-  // list() {
-  //   return [].concat(this.__settings.files);
-  // }
+  list( cdn, forceMap ) {
+    let s = this.__settings.cdn;
+    let files = {};
+
+    if ( _.isBoolean(cdn) ) {
+      forceMap = cdn;
+      cdn = undefined;
+    }
+
+    let cdns = _.isUndefined(cdn) ? Object.keys(s) : toArr(cdn);
+
+    cdns.forEach(function( c ) {
+      if ( _.isString(c) && s.hasOwnProperty(c) ) {
+        files[c] = [].concat(s[c].__files);
+      }
+    });
+
+    return (Object.keys(files).length > 1 || forceMap === true) ? files : files[cdns.shift()];
+  }
 
   /**
    * 上传
