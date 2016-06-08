@@ -3,45 +3,43 @@
 const fs = require("fs");
 const path = require("path");
 
-const SDK = require("wantu");
+const Sdk = require("wantu");
 
-var descriptor = {
+const descriptor = {
     name: "wantu",
     type: "cdn"
   };
 
-descriptor.register = function( CDN ) {
-  return class Wantu extends CDN {
+descriptor.register = function( CdnFactory ) {
+  return class Wantu extends CdnFactory {
     constructor( settings ) {
       super(settings);
 
-      this.__inst = new SDK(settings.ACCESS_KEY, settings.SECRET_KEY);
+      this.__inst = new Sdk(settings.accessKey, settings.secretKey);
       this.__ns = settings.space;
     }
 
     uploadFile( file ) {
-      var cloud = this;
-      var dir = path.join(cloud.remote, path.dirname(file));
+      let dir = path.join(this.remote, path.dirname(file));
 
       if ( dir === "." ) {
         dir = "";
       }
 
-      cloud.uploading++;
+      this.uploading++;
 
-      cloud.__inst.singleUpload({
-        namespace: cloud.__ns,
+      this.__inst.singleUpload({
+        namespace: this.__ns,
         expiration: -1
-      }, path.join(cloud.local, file), ("/" + dir), "", "", function( err, res ) {
-        cloud.uploaded++;
+      }, path.join(this.local, file), ("/" + dir), "", "", ( err, res ) => {
+        this.uploaded++;
 
         if ( !err && res.statusCode === 200 ) {
-          log.uploaded(JSON.parse(res.data).url, "wantu");
+          this.emit("upload:success", this, res);
         }
         else {
-          cloud.failedFiles.push(file);
-
-          console.log("上传到顽兔时发生如下错误\n", err.code);
+          this.failedFiles.push(file);
+          this.emit("upload:fail", this, res, err);
         }
       });
     }

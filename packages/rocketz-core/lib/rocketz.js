@@ -6,10 +6,10 @@ const path = require("path");
 const _ = require("lodash");
 
 const fc = require("./collector");
-const CDN = require("./cdn");
+const CdnFactory = require("./cdn");
 
 const ROCKETZ_DEFAULTS = {
-    cdn: {}             // 要上传的 CDN 名字
+    cdn: {}             // 要上传的 CDN
   };
 const CDN_DEFAULTS = {
     accessKey: "",      // Access Key
@@ -31,21 +31,9 @@ Object.keys(VALID_PLUGINS).forEach(function( pkgPath ) {
     let descriptor = require(VALID_PLUGINS[pkgPath]);
 
     if ( descriptor && descriptor.type === "cdn" ) {
-      VALID_CDN[descriptor.name] = descriptor.register(CDN)
+      VALID_CDN[descriptor.name] = descriptor.register(CdnFactory)
     }
   });
-
-/**
- * 设置不可枚举的属性
- *
- * @param obj
- * @param prop
- * @param value
- * @returns {Object}
- */
-function setPropUnenumerable( obj, prop, value ) {
-  return Object.defineProperty(obj, prop, {enumerable: false, value});
-}
 
 /**
  * 将目标对象转化为数组
@@ -141,7 +129,7 @@ function resolveCdnSettings( ...settings ) {
   });
 
   if ( isCollect ) {
-    setPropUnenumerable(cdnSettings, "__files", fc.collect(cdnSettings.local, cdnSettings.files, cdnSettings.exts, cdnSettings.deep));
+    cdnSettings.__files = fc.collect(cdnSettings.local, cdnSettings.files, cdnSettings.exts, cdnSettings.deep);
   }
 
   return cdnSettings;
@@ -161,7 +149,7 @@ module.exports = class RocketZ {
       delete s[k];
     });
 
-    setPropUnenumerable(this, "__settings", s);
+    this.__settings = s;
   }
 
   /**
@@ -183,12 +171,16 @@ module.exports = class RocketZ {
     cdns.forEach(( c ) => {
       if ( isValidCdn(c.name) && isValidCdnSettings(c.settings) ) {
         let _s = resolveCdnSettings({}, this.__settings, c.settings);
+        let _u = VALID_CDN[c.name];
 
         Object.keys(ROCKETZ_DEFAULTS).forEach(function( p ) {
           delete _s[p];
         });
 
-        this.__settings.cdn[c.name] = _s;
+        this.__settings.cdn[c.name] = {
+          settings: _s,
+          uploader: new _u(_s)
+        };
       }
     });
   }
@@ -213,7 +205,7 @@ module.exports = class RocketZ {
 
     cdns.forEach(function( c ) {
       if ( _.isString(c) && s.hasOwnProperty(c) ) {
-        files[c] = [].concat(s[c].__files);
+        files[c] = [].concat(s[c].settings.__files);
       }
     });
 
@@ -221,57 +213,34 @@ module.exports = class RocketZ {
   }
 
   /**
-   * 上传
+   * 获取指定的 CDN 实例
    *
-   * @param settings
-   * @returns {boolean}
+   * @param name
+   * @returns {*}
    */
-  upload( settings ) {
-    let rs = this.__settings;       // 'rs' is short for 'rocketzSettings'
-    let cs = [];                    // 'cs' is short for 'cdnSettings'
+  cdn( name ) {
+    let s = this.__settings.cdn;
 
-    // 没指定 CDN 时上传到所有可用的 CDN
-    if ( settings == null ) {
-      settings = Object.keys(rs.cdn);
+    if ( isValidCdn(name, s) ) {
+      return s[name].uploader;
     }
+    else {
+      return null;
+    }
+  }
 
-    // 获取可用的 CDN 配置信息
-    toArr(settings).forEach(function( s ) {
-      let _s = {};
+  /**
+   * 上传文件到指定的 CDN
+   *
+   * @param cdn
+   */
+  upload( cdn = Object.keys(this.__settings.cdn) ) {
+    toArr(cdn).forEach(( c ) => {
+      let u = this.cdn(c);
 
-      if ( isValidCdn(s, rs.cdn) ) {
-        _s.name = s;
-        _s.settings = _.assign({}, rs.cdn[s]);
-      }
-      else if ( isValidCdn(s.name, rs.cdn) && isValidCdnSettings(s) ) {
-        _s.name = s.name;
-        _s.settings = resolveCdnSettings({}, rs.cdn[s.name], s);
-
-        // 删除不必要的属性
-        ["name"].forEach(function( p ) {
-          delete _s.settings[p];
-        });
-      }
-
-      if ( Object.keys(_s).length > 0 ) {
-        cs.push(_s);
+      if ( u ) {
+        u.upload();
       }
     });
-
-    if ( cs.length === 0 ) {
-      return false;
-    }
-
-    cs.forEach(function( s ) {
-      let Uploader = VALID_CDN[s.name];
-      let _s = s.settings;
-
-      _s.files = _s.__files;
-      delete _s.__files;
-
-      (new Uploader(_s)).upload();
-    });
-
-    return true;
   }
 }
