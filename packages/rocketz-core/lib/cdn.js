@@ -1,5 +1,8 @@
 "use strict";
 
+const path = require("path");
+const EventEmitter = require("events");
+
 const _ = require("lodash");
 
 const DEFAULTS = {
@@ -7,6 +10,8 @@ const DEFAULTS = {
     uploaded: 0,
     waiting: false
   };
+
+class CdnEvent extends EventEmitter {}
 
 /**
  * 上传文件
@@ -19,7 +24,7 @@ function upload( files, cloud, completed ) {
   cloud.waiting = true;
 
   files.forEach(function( file ) {
-    cloud.uploadFile(file);
+    cloud.uploadFile(path.isAbsolute(file) ? file.replace(`${cloud.local}/`, "") : file);
   });
 
   cloud.timer = setInterval(function() {
@@ -92,6 +97,8 @@ module.exports = class CDN {
       files: [],
       failedFiles: [],
     }, settings);
+
+    this.__e = new CdnEvent();
 
     this.chunk();
   }
