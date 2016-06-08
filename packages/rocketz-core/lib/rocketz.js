@@ -6,7 +6,7 @@ const path = require("path");
 const _ = require("lodash");
 
 const fc = require("./collector");
-const CDN = require("./cdn");
+const CdnFactory = require("./cdn");
 
 const ROCKETZ_DEFAULTS = {
     cdn: {}             // 要上传的 CDN
@@ -31,7 +31,7 @@ Object.keys(VALID_PLUGINS).forEach(function( pkgPath ) {
     let descriptor = require(VALID_PLUGINS[pkgPath]);
 
     if ( descriptor && descriptor.type === "cdn" ) {
-      VALID_CDN[descriptor.name] = descriptor.register(CDN)
+      VALID_CDN[descriptor.name] = descriptor.register(CdnFactory)
     }
   });
 

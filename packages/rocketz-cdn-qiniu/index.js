@@ -6,7 +6,7 @@ const readline = require("readline");
 
 const qiniu = require("qiniu");
 
-var descriptor = {
+const descriptor = {
     name: "qiniu",
     type: "cdn"
   };
@@ -15,8 +15,8 @@ function isFunc( obj ) {
   return typeof obj === "function";
 }
 
-descriptor.register = function( CDN ) {
-  return class Qiniu extends CDN {
+descriptor.register = function( CdnFactory ) {
+  return class Qiniu extends CdnFactory {
     constructor( settings ) {
       super(settings);
 
@@ -38,10 +38,10 @@ descriptor.register = function( CDN ) {
 
         if ( err ) {
           this.failedFiles.push(file);
-          this.__e.emit("upload:fail", this, ret, err);
+          this.emit("upload:fail", this, ret, err);
         }
         else {
-          this.__e.emit("upload:success", this, ret);
+          this.emit("upload:success", this, ret);
         }
       });
     }
@@ -62,7 +62,7 @@ descriptor.register = function( CDN ) {
         keys.forEach(( key ) => {
           cl.remove(this.space, key, ( err, ret ) => {
             if ( err ) {
-              this.__e.emit("remove:fail", this, ret, err);
+              this.emit("remove:fail", this, ret, err);
             }
 
             if ( isFunc(callback) ) {
@@ -74,6 +74,5 @@ descriptor.register = function( CDN ) {
     }
   }
 };
-
 
 module.exports = descriptor;

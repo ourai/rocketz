@@ -89,7 +89,7 @@ function retry( cloud ) {
   }
 }
 
-module.exports = class CDN {
+module.exports = class CdnFactory {
   constructor( settings ) {
     _.assign(this, DEFAULTS, {
       // fragment: 1,
@@ -120,6 +120,8 @@ module.exports = class CDN {
   /**
    * 碎片化资源文件
    * 将大批量文件切割
+   *
+   * @returns {*}
    */
   chunk() {
     let f = this.fragment;
@@ -160,4 +162,35 @@ module.exports = class CDN {
    * 删除文件
    */
   remove() {}
+
+  /**
+   * 监听事件
+   *
+   * @param args
+   * @returns {*}
+   */
+  on(...args) {
+    return this.__e.on(...args);
+  }
+
+  /**
+   * 监听事件（只触发一次）
+   *
+   * @param args
+   * @returns {*|Function}
+   */
+  once(...args) {
+    return this.__e.once(...args);
+  }
+
+  /**
+   * 触发事件
+   *
+   * @param args
+   * @returns {*}
+   * @private
+   */
+  emit(...args) {
+    return this.__e.emit(...args);
+  }
 }
