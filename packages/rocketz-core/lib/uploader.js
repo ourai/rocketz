@@ -5,13 +5,39 @@ const EventEmitter = require("events");
 
 const _ = require("lodash");
 
+const utils = require("./utils");
+const fc = require("./collector");
+
 const DEFAULTS = {
+    accessKey: "",      // Access Key
+    secretKey: "",      // Secret Key
+    space: "",          // 空间名
+    remote: "",         // 远程文件存放目录
+    local: "",          // 本地文件所在目录
+    files: [],          // 限制上传的文件名（无扩展名）
+    exts: [],           // 限制上传的扩展名（裸扩展名）
+    deep: true,         // 是否深度查找
+    fragment: 1,        // 分段上传时每段的文件数量
+    retryCount: 0       // 上传失败时重试上传次数
+  };
+const STATES = {
     uploading: 0,
     uploaded: 0,
     waiting: false
   };
 
-class CdnEvent extends EventEmitter {}
+class UploaderEvent extends EventEmitter {}
+
+/**
+ * 设置不低于最小值的值
+ *
+ * @param value
+ * @param minimal
+ * @returns {number|*}
+ */
+function minimalValue( value, minimal ) {
+  return !_.isNumber(value) && value > minimal ? value : minimal;
+}
 
 /**
  * 上传文件
@@ -77,7 +103,7 @@ function retry( cloud ) {
     return;
   }
 
-  console.log("\n[WARN] 以下 " + files.length + " 个文件上传失败\n" + files.join("\n"));
+  console.log(`\n[WARN] 以下 ${files.length} 个文件上传失败\n${files.join("\n")}`);
 
   if ( cloud.retryCount > 0 ) {
     console.log("\n[INFO] 将要重新上传以上文件");
@@ -89,16 +115,55 @@ function retry( cloud ) {
   }
 }
 
-module.exports = class CdnFactory {
+class Uploader {
+  /**
+   * 整理成所需要的 CDN 配置
+   *
+   * @param settings
+   */
+  static normalize( ...settings ) {
+    let newest = settings[settings.length - 1];
+    let refactor = ["files", "exts", "local", "deep"].map(function( p ) {
+      return {
+        key: p,
+        value: newest[p],
+        handler: (p === "local" ? path.resolve :
+          (p === "deep" ? function( idDeep ) {
+            return idDeep !== false;
+          } : utils.toArr))
+      };
+    });
+    let cdnSettings = _.assign(...settings);
+    let isCollect = false;
+
+    // 获取要上传的文件
+    refactor.forEach(function( o ) {
+      if ( newest.hasOwnProperty(o.key) ) {
+        isCollect = true;
+        cdnSettings[o.key] = o.handler(o.value);
+      }
+    });
+
+    [{k: "fragment", v: 1}, {k: "retryCount", v: 0}].forEach(function( o ) {
+      cdnSettings[o.k] = minimalValue(cdnSettings[o.k], o.v);
+    });
+
+    if ( isCollect ) {
+      cdnSettings.__files = fc.collect(cdnSettings.local, cdnSettings.files, cdnSettings.exts, cdnSettings.deep);
+    }
+
+    return cdnSettings;
+  }
+
   constructor( settings ) {
-    _.assign(this, DEFAULTS, {
+    _.assign(this, STATES, {
       // fragment: 1,
       // retryCount: 0,
       files: [],
       failedFiles: [],
     }, settings);
 
-    this.__e = new CdnEvent();
+    this.__e = new UploaderEvent();
 
     this.chunk();
   }
@@ -114,7 +179,7 @@ module.exports = class CdnFactory {
       delete this.timer;
     }
 
-    return _.assign(this, DEFAULTS);
+    return _.assign(this, STATES);
   }
 
   /**
@@ -194,3 +259,20 @@ module.exports = class CdnFactory {
     return this.__e.emit(...args);
   }
 }
+
+Object.keys(DEFAULTS).forEach(function( k ) {
+  Object.defineProperty(DEFAULTS, k, {
+    configurable: false,
+    writable: false
+  });
+});
+
+Object.defineProperty(Uploader, "__defaults", {
+    __proto__: null,
+    enumerable: false,
+    configurable: false,
+    writable: false,
+    value: DEFAULTS
+  });
+
+module.exports = Uploader;
