@@ -1,6 +1,6 @@
 {
   "name": "rocketz-register",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "RocketZ plugin loader",
   "homepage": "https://github.com/ourai/rocketz",
   "keywords": [
@@ -27,6 +27,7 @@
     "babel-preset-es2015": "^6.9.0"
   },
   "dependencies": {
-    "find-up": "^1.1.2"
+    "find-up": "^1.1.2",
+    "lodash": "^4.13.1"
   }
 }

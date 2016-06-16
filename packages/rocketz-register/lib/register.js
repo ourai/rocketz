@@ -5,6 +5,8 @@ const fs = require("fs");
 
 const findSync = require("find-up").sync;
 
+const Uploader = require("./uploader");
+
 const PLUGIN_TYPES = ["cdn", "command"];
 const PACKAGE_DIR = "node_modules";
 
@@ -60,14 +62,21 @@ module.exports = {
 
     collectPackages();
 
-    Object.keys(pkgs).forEach(function( pkgPath ) {
+    Object.keys(pkgs).forEach(( pkgPath ) => {
       let descriptor = require(pkgs[pkgPath]);
 
       if ( descriptor && descriptor.hasOwnProperty("type") ) {
-        plugins[descriptor.type][descriptor.name] = descriptor.register;
+        let t = descriptor.type;
+        let r = descriptor.register;
+
+        plugins[t][descriptor.name] = this.handler.hasOwnProperty(t) ? r(this.handler[t]) : r;
       }
     });
 
     return type ? plugins[type] : plugins;
+  },
+
+  handler: {
+    cdn: Uploader
   }
 };
