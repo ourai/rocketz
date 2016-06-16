@@ -5,13 +5,13 @@ const path = require("path");
 
 // 默认支持的文件类型（扩展名）
 const defaultExts = [
-  // 常见图片
-  "jpg", "jpeg", "png", "gif", "svg",
-  // 网络字体
-  "eot", "ttf", "woff", "woff2",
-  // 前端资源
-  "css", "js", "swf"
-];
+    // 常见图片
+    "jpg", "jpeg", "png", "gif", "svg",
+    // 网络字体
+    "eot", "ttf", "woff", "woff2",
+    // 前端资源
+    "css", "js", "swf"
+  ];
 
 const collector = module.exports = {};
 
