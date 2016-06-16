@@ -2,14 +2,32 @@
 
 const _ = require("lodash");
 
-const utils = require("./utils");
-const resolver = require("./resolver");
-const Uploader = require("./uploader");
+const register = require("rocketz-register");
+const Uploader = register.handler.cdn;
 
 const DEFAULTS = {
     cdn: {}             // 要上传的 CDN
   };
-const VALID_CDN = resolver.load();
+const VALID_CDN = register.load("cdn");
+
+/**
+ * 将目标对象转化为数组
+ *
+ * @param obj
+ * @returns {*}
+ */
+function toArr( obj ) {
+  if ( !Array.isArray(obj) ) {
+    if ( typeof obj === "string" ) {
+      obj = obj === "" ? [] : obj.split(",");
+    }
+    else {
+      obj = [].concat(obj);
+    }
+  }
+
+  return obj;
+}
 
 /**
  * 判断 CDN 是否有效
@@ -106,7 +124,7 @@ module.exports = class RocketZ {
       cdn = undefined;
     }
 
-    let cdns = _.isUndefined(cdn) ? Object.keys(s) : utils.toArr(cdn);
+    let cdns = _.isUndefined(cdn) ? Object.keys(s) : toArr(cdn);
 
     cdns.forEach(function( c ) {
       if ( _.isString(c) && s.hasOwnProperty(c) ) {
@@ -140,7 +158,7 @@ module.exports = class RocketZ {
    * @param cdn
    */
   upload( cdn = Object.keys(this.__settings.cdn) ) {
-    utils.toArr(cdn).forEach(( c ) => {
+    toArr(cdn).forEach(( c ) => {
       let u = this.get(c);
 
       if ( u ) {
