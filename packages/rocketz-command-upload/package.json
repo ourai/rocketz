@@ -1,0 +1,32 @@
+{
+  "name": "rocketz-command-upload",
+  "version": "0.0.0",
+  "description": "Upload command for RocketZ CLI tool",
+  "homepage": "https://github.com/ourai/rocketz",
+  "keywords": [
+    "rocketz",
+    "plugin",
+    "cli",
+    "command-line",
+    "command",
+    "upload"
+  ],
+  "author": "Ourai Lin <ourairyu@hotmail.com> (http://ourai.ws/)",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ourai/rocketz.git"
+  },
+  "bugs": "https://github.com/ourai/rocketz/issues",
+  "main": "index.js",
+  "scripts": {
+    "prebuild": "mv lib src",
+    "build": "babel src -d lib --presets=es2015",
+    "prepublish": "npm run build",
+    "postpublish": "rm -rf lib && mv src lib"
+  },
+  "license": "ISC",
+  "devDependencies": {
+    "babel-cli": "^6.10.1",
+    "babel-preset-es2015": "^6.9.0"
+  }
+}
