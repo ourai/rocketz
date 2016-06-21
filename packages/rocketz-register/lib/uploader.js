@@ -5,21 +5,9 @@ const EventEmitter = require("events");
 
 const _ = require("lodash");
 
-const utils = require("./utils");
+const Incubator = require("./incubator");
 const fc = require("./collector");
 
-const DEFAULTS = {
-    accessKey: "",      // Access Key
-    secretKey: "",      // Secret Key
-    space: "",          // 空间名
-    remote: "",         // 远程文件存放目录
-    local: "",          // 本地文件所在目录
-    files: [],          // 限制上传的文件名（无扩展名）
-    exts: [],           // 限制上传的扩展名（裸扩展名）
-    deep: true,         // 是否深度查找
-    fragment: 1,        // 分段上传时每段的文件数量
-    retryCount: 0       // 上传失败时重试上传次数
-  };
 const STATES = {
     uploading: 0,
     uploaded: 0,
@@ -27,6 +15,25 @@ const STATES = {
   };
 
 class UploaderEvent extends EventEmitter {}
+
+/**
+ * 将目标对象转化为数组
+ *
+ * @param obj
+ * @returns {*}
+ */
+function toArr( obj ) {
+  if ( !Array.isArray(obj) ) {
+    if ( typeof obj === "string" ) {
+      obj = obj === "" ? [] : obj.split(",");
+    }
+    else {
+      obj = [].concat(obj);
+    }
+  }
+
+  return obj;
+}
 
 /**
  * 设置不低于最小值的值
@@ -72,7 +79,7 @@ function upload( files, cloud, completed ) {
  * @param cloud
  */
 function send( cloud ) {
-  upload(cloud.files, cloud, retry);
+  upload(cloud.__files, cloud, retry);
 }
 
 /**
@@ -130,7 +137,7 @@ class Uploader {
         handler: (p === "local" ? path.resolve :
           (p === "deep" ? function( idDeep ) {
             return idDeep !== false;
-          } : utils.toArr))
+          } : toArr))
       };
     });
     let cdnSettings = _.assign(...settings);
@@ -160,7 +167,7 @@ class Uploader {
       // fragment: 1,
       // retryCount: 0,
       files: [],
-      failedFiles: [],
+      failedFiles: []
     }, settings);
 
     this.__e = new UploaderEvent();
@@ -181,6 +188,10 @@ class Uploader {
 
     return _.assign(this, STATES);
   }
+
+  normalizeResponse( target ) {}
+
+  normalizeError( target ) {}
 
   /**
    * 碎片化资源文件
@@ -207,11 +218,11 @@ class Uploader {
    * 上传文件
    */
   upload() {
-    if ( _.isString(this.files) ) {
-      this.files = [this.files];
+    if ( _.isString(this.__files) ) {
+      this.__files = [this.__files];
     }
 
-    if ( !_.isArray(this.files) ) {
+    if ( !_.isArray(this.__files) ) {
       return false;
     }
 
@@ -260,19 +271,12 @@ class Uploader {
   }
 }
 
-Object.keys(DEFAULTS).forEach(function( k ) {
-  Object.defineProperty(DEFAULTS, k, {
-    configurable: false,
-    writable: false
-  });
-});
-
 Object.defineProperty(Uploader, "__defaults", {
-    __proto__: null,
-    enumerable: false,
-    configurable: false,
-    writable: false,
-    value: DEFAULTS
-  });
+  __proto__: null,
+  enumerable: false,
+  configurable: false,
+  writable: false,
+  value: Incubator.defaults()
+});
 
 module.exports = Uploader;

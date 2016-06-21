@@ -1,14 +1,12 @@
 {
-  "name": "rocketz-core",
-  "version": "1.0.3",
-  "description": "Upload local files to CDNs",
+  "name": "rocketz-register",
+  "version": "0.1.1",
+  "description": "RocketZ plugin loader",
   "homepage": "https://github.com/ourai/rocketz",
   "keywords": [
     "rocketz",
-    "uploader",
-    "upload",
-    "cdn",
-    "cloud"
+    "register",
+    "plugin"
   ],
   "author": "Ourai Lin <ourairyu@hotmail.com> (http://ourai.ws/)",
   "repository": {
@@ -23,14 +21,14 @@
     "prepublish": "npm run build",
     "postpublish": "rm -rf lib && mv src lib"
   },
-  "engines": "node >= 0.10.0",
+  "license": "ISC",
   "devDependencies": {
-    "babel-cli": "^6.9.0",
+    "babel-cli": "^6.10.1",
     "babel-preset-es2015": "^6.9.0"
   },
   "dependencies": {
-    "lodash": "^4.1.0",
-    "rocketz-register": "^0.1.1"
-  },
-  "license": "MIT"
+    "find-up": "^1.1.2",
+    "inquirer": "^1.0.3",
+    "lodash": "^4.13.1"
+  }
 }
