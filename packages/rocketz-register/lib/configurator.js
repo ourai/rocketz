@@ -3,32 +3,14 @@
 const fs = require("fs");
 const path = require("path");
 
-/**
- * 判断目标对象是否具备指定属性
- *
- * @param obj
- * @param prop
- * @returns {boolean}
- */
-function hasOwn( obj, prop ) {
-  return Object.prototype.hasOwnProperty.call(obj, prop);
-}
+const _ = require("lodash");
 
-/**
- * 使 CDN 配置信息的字段与全局配置相同
- *
- * @param conf
- * @param cdn
- * @returns {*}
- */
-function normalize( conf, cdn ) {
-  Object.keys(conf).forEach(function( k ) {
-    if ( k !== "cdn" && !hasOwn(cdn, k) ) {
-      cdn[k] = conf[k];
-    }
-  });
+const Incubator = require("./incubator");
 
-  return cdn;
+const EXCLUDES = ["accessKey", "secretKey", "domain"];
+
+function getPath( env ) {
+  return env.configPath ? env.configPath : path.join(env.cwd, env.configNameSearch[0]);
 }
 
 /**
@@ -40,7 +22,7 @@ function normalize( conf, cdn ) {
 function resolve( conf ) {
   conf = conf === "" ? {} : JSON.parse(conf);
 
-  if ( !hasOwn(conf, "cdn") ) {
+  if ( !_.has(conf, "cdn") ) {
     conf.cdn = {};
   }
 
@@ -50,41 +32,21 @@ function resolve( conf ) {
 function unique( conf, cdn ) {
   Object.keys(conf).forEach(function( k ) {
     if ( k !== "cdn" && cdn[k] === conf[k] ) {
-      delete cdn[k];
+      _.unset(cdn, k);
     }
   });
 
   return cdn;
 }
 
-/**
- * 克隆一个对象
- *
- * @param obj
- * @returns {{}}
- */
-function clone( obj, filter ) {
-  if ( typeof obj !== "object" ) {
-    return {};
-  }
-
-  let copy = {};
-
-  Object.keys(obj).forEach(function( k ) {
-    let v = obj[k];
-
-    if ( typeof filter !== "function" || filter.apply(v, [v, k]) === true ) {
-      copy[k] = v;
-    }
-  });
-
-  return copy;
-}
-
-class Configurator {
+class Configurator extends Incubator {
   constructor( env ) {
+    super(resolve(env.configPath ? fs.readFileSync(getPath(env), "utf-8") : ""));
+
+    this.transform();
+    this.unset(EXCLUDES);
+
     this.__env = env;
-    this.__conf = resolve(env.configPath ? fs.readFileSync(this.path(), "utf-8") : "");
   }
 
   /**
@@ -93,7 +55,7 @@ class Configurator {
    * @returns {string|*}
    */
   path() {
-    return this.__env.configPath ? this.__env.configPath : path.join(this.__env.cwd, this.__env.configNameSearch[0]);
+    return getPath(this.__env);
   }
 
   /**
@@ -103,15 +65,19 @@ class Configurator {
    * @returns {{}}
    */
   get( cdn ) {
-    return clone(cdn ? this.__conf.cdn[cdn] : this.__conf);
+    return _.cloneDeep(cdn ? this.__settings.cdn[cdn] : this.__settings);
   }
 
   merge( conf, cdn ) {
-    let saved = this.__conf;
+    if ( !_.has(this, "__settings") ) {
+      return super.merge(conf);
+    }
+
+    let saved = this.__settings;
     let c;
 
     if ( cdn ) {
-      if ( !hasOwn(saved.cdn, cdn) ) {
+      if ( !_.has(saved.cdn, cdn) ) {
         saved.cdn[cdn] = {};
       }
 

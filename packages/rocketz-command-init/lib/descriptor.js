@@ -50,27 +50,23 @@ const DEFAULTS = [
 const AUTH = [
   {
     name: "accessKey",
-    message: "Access Key：",
-    default: "",
-    type: "input"
+    description: "Access Key",
+    default: ""
   },
   {
     name: "secretKey",
-    message: "Secret Key：",
-    default: "",
-    type: "input"
+    description: "Secret Key",
+    default: ""
   },
   {
     name: "space",
-    message: "存储空间：",
-    default: "",
-    type: "input"
+    description: "存储空间",
+    default: ""
   },
   {
     name: "domain",
     message: "访问域名：",
-    default: "",
-    type: "input"
+    default: ""
   }
 ];
 
@@ -80,22 +76,25 @@ const descriptor = {
   description: "Initialize settings"
 };
 
-function normalize( savedConf, cdnConf ) {
-  let conf = _.assign({}, savedConf, cdnConf);
-  let prompts = DEFAULTS.map(function( item ) {
+function transform( items, conf ) {
+  return items.map(function( item ) {
     return {
       name: item.name,
       message: `${item.description}：`,
-      default: conf.hasOwnProperty(item.name) ? conf[item.name] : item.default,
+      default: _.has(conf, item.name) ? conf[item.name] : item.default,
       type: "input"
-    };
-  });
+    }
+  })
+}
 
-  if ( !cdnConf.hasOwnProperty("cdn") ) {
-    prompts = AUTH.concat(prompts);
+function normalize( savedConf, cdnConf ) {
+  let items = _.concat(DEFAULTS);
+
+  if ( !_.has(cdnConf, "cdn") ) {
+    items = _.concat(AUTH, items);
   }
 
-  return prompts;
+  return transform(items, _.assign({}, savedConf, cdnConf));
 }
 
 descriptor.register = function ( Commander ) {

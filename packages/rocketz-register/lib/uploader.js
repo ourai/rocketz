@@ -5,21 +5,9 @@ const EventEmitter = require("events");
 
 const _ = require("lodash");
 
+const Incubator = require("./incubator");
 const fc = require("./collector");
 
-const DEFAULTS = {
-    accessKey: "",      // Access Key
-    secretKey: "",      // Secret Key
-    space: "",          // 空间名
-    domain: "",         // 域名
-    remote: "",         // 远程文件存放目录
-    local: "",          // 本地文件所在目录
-    files: [],          // 限制上传的文件名（无扩展名）
-    exts: [],           // 限制上传的扩展名（裸扩展名）
-    deep: true,         // 是否深度查找
-    fragment: 1,        // 分段上传时每段的文件数量
-    retryCount: 0       // 上传失败时重试上传次数
-  };
 const STATES = {
     uploading: 0,
     uploaded: 0,
@@ -283,19 +271,12 @@ class Uploader {
   }
 }
 
-Object.keys(DEFAULTS).forEach(function( k ) {
-  Object.defineProperty(DEFAULTS, k, {
-    configurable: false,
-    writable: false
-  });
-});
-
 Object.defineProperty(Uploader, "__defaults", {
   __proto__: null,
   enumerable: false,
   configurable: false,
   writable: false,
-  value: DEFAULTS
+  value: Incubator.defaults()
 });
 
 module.exports = Uploader;
