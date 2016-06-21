@@ -1,12 +1,16 @@
 {
-  "name": "rocketz-register",
-  "version": "0.1.1",
-  "description": "RocketZ plugin loader",
+  "name": "rocketz-command-init",
+  "version": "0.0.0",
+  "description": "Init command for RocketZ CLI tool",
   "homepage": "https://github.com/ourai/rocketz",
   "keywords": [
     "rocketz",
-    "register",
-    "plugin"
+    "plugin",
+    "cli",
+    "command-line",
+    "command",
+    "initialize",
+    "init"
   ],
   "author": "Ourai Lin <ourairyu@hotmail.com> (http://ourai.ws/)",
   "repository": {
@@ -27,8 +31,7 @@
     "babel-preset-es2015": "^6.9.0"
   },
   "dependencies": {
-    "find-up": "^1.1.2",
-    "inquirer": "^1.0.3",
-    "lodash": "^4.13.1"
+    "lodash": "^4.13.1",
+    "rocketz-core": "^1.0.3"
   }
 }

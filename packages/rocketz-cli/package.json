@@ -25,7 +25,16 @@
     "rocketz": "./bin/rocketz.js"
   },
   "dependencies": {
-    "rocketz-core": "^0.4.5"
+    "liftoff": "^2.2.1",
+    "meow": "^3.7.0",
+    "rocketz-command-init": "0.0.0",
+    "rocketz-command-upload": "0.0.0",
+    "rocketz-core": "^1.0.0",
+    "rocketz-register": "^0.1.1"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "babel-cli": "^6.10.1",
+    "babel-preset-es2015": "^6.9.0"
+  }
 }

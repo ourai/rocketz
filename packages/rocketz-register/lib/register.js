@@ -6,11 +6,12 @@ const fs = require("fs");
 const findSync = require("find-up").sync;
 
 const Uploader = require("./uploader");
+const Commander = require("./commander");
 
 const PLUGIN_TYPES = ["cdn", "command"];
 const PACKAGE_DIR = "node_modules";
 
-const libName = require(findSync("package.json", {cwd: __dirname})).name.split("-").shift();
+const APP_NAME = "rocketz";
 const pkgs = {};
 
 /**
@@ -26,7 +27,7 @@ function findPackages( dir ) {
   fs
     .readdirSync(dir)
     .filter(function( dirname ) {
-      return (new RegExp(`^${libName}-${PLUGIN_TYPES.join("|")}-`)).test(dirname) && !pkgs[dirname];
+      return (new RegExp(`^${APP_NAME}-${PLUGIN_TYPES.join("|")}-`)).test(dirname) && !pkgs[dirname];
     })
     .forEach(function( plugin ) {
       pkgs[plugin] = path.resolve(dir, plugin);
@@ -36,10 +37,10 @@ function findPackages( dir ) {
 /**
  * 收集插件
  */
-function collectPackages() {
-  let localPath = findSync(PACKAGE_DIR, {cwd: __dirname});
+function collectPackages( cwd ) {
+  let localPath = findSync(PACKAGE_DIR, {cwd: cwd});
 
-  if ( require(path.join(path.dirname(localPath), "package.json")).name === libName ) {
+  if ( require(path.join(path.dirname(localPath), "package.json")).name === APP_NAME ) {
     localPath = findSync(PACKAGE_DIR, {cwd: path.join(localPath, "../..")});
   }
 
@@ -47,6 +48,16 @@ function collectPackages() {
 }
 
 module.exports = {
+  __cwd: __dirname,
+
+  cwd: function( cwd ) {
+    if ( typeof cwd === "string" ) {
+      this.__cwd = cwd;
+    }
+
+    return this.__cwd;
+  },
+
   /**
    * 挂载插件
    *
@@ -60,7 +71,7 @@ module.exports = {
       plugins[t] = {};
     });
 
-    collectPackages();
+    collectPackages(this.__cwd);
 
     Object.keys(pkgs).forEach(( pkgPath ) => {
       let descriptor = require(pkgs[pkgPath]);
@@ -77,6 +88,7 @@ module.exports = {
   },
 
   handler: {
-    cdn: Uploader
+    cdn: Uploader,
+    command: Commander
   }
 };
