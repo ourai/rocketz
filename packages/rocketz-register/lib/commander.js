@@ -2,8 +2,6 @@
 
 const inquirer = require("inquirer");
 
-const Configurator = require("./configurator");
-
 class Commander {
   static info( ...args ) {
     return console.log(...args);
@@ -23,10 +21,8 @@ class Commander {
 
   constructor() {
   }
-
-  getConfigurator( ...args ) {
-    return new Configurator(...args);
-  }
 }
+
+Commander.Configurator = require("./configurator");
 
 module.exports = Commander;

@@ -65,6 +65,12 @@ const AUTH = [
     message: "存储空间：",
     default: "",
     type: "input"
+  },
+  {
+    name: "domain",
+    message: "访问域名：",
+    default: "",
+    type: "input"
   }
 ];
 
@@ -94,7 +100,7 @@ function normalize( savedConf, cdnConf ) {
 
 descriptor.register = function ( Commander ) {
   return function( argv, flags, env ) {
-    let configurator = (new Commander()).getConfigurator(env);
+    let configurator = new Commander.Configurator(env);
     let cdnName = argv[0];
     let conf = configurator.get();
 
