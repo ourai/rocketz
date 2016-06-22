@@ -1,6 +1,6 @@
 {
   "name": "rocketz-command-init",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Init command for RocketZ CLI tool",
   "homepage": "https://github.com/ourai/rocketz",
   "keywords": [
