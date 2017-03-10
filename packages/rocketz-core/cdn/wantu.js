@@ -34,12 +34,14 @@ module.exports = class Wantu extends Cloud {
       cloud.uploaded++;
 
       if ( !err && res.statusCode === 200 ) {
-        log.uploaded(JSON.parse(res.data).url, "wantu");
+        if ( !cloud.silent ) {
+          log.uploaded(JSON.parse(res.data).url, "wantu");
+        }
       }
       else {
         cloud.failedFiles.push(file);
 
-        console.log("上传到顽兔时发生如下错误\n", err.code);
+        console.log(`${file} 上传到顽兔时发生如下错误\n`, err.code);
       }
     });
   }

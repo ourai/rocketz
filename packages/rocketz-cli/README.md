@@ -26,7 +26,8 @@ npm install -g rocketz-cli
   "files": [],          // 指定要上传的文件，默认为全部
   "exts": [],           // 指定要上传的文件类型，默认为全部
   "deep": true,         // 是否进行深度遍历，默认为 true
-  "interactive": true   // 是否进行为交互式，默认为 true
+  "interactive": true,  // 是否进行为交互式，默认为 true
+  "silent": false       // 是否使用静默模式，默认为 false
 }
 ```
 

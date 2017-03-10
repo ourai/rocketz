@@ -51,17 +51,17 @@ module.exports = class Qiniu extends Cloud {
               rl.close();
             });
           }
-          else {
+          else if ( !cloud.silent ) {
             console.log("!!! " + key + " 已经存在");
           }
         }
         else {
           cloud.failedFiles.push(file);
 
-          console.log("上传到七牛时发生如下错误\n", err);
+          console.log(`${file} 上传到七牛时发生如下错误\n`, err);
         }
       }
-      else {
+      else if ( !cloud.silent ) {
         log.uploaded(ret.key, "qiniu");
       }
     });

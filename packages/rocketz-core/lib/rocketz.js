@@ -72,7 +72,9 @@ rocketz.preview = function() {
     return false;
   }
   else {
-    log.files(assets, path.resolve(this.__conf.assets));
+    if ( !this.__conf.silent ) {
+      log.files(assets, path.resolve(this.__conf.assets));
+    }
 
     return true;
   }
@@ -108,6 +110,7 @@ rocketz.upload = function() {
           fragment: minimalValue(conf.fragment, 1),
           retryCount: minimalValue(conf.retry, 0),
           interactive: conf.interactive !== false,
+          silent: conf.silent !== false,
           files: assets,
           local: path.resolve(conf.assets),
           remote: conf.remote || ""
