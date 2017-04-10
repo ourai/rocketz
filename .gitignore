@@ -1,7 +1,9 @@
-.DS_Store
-.git
-
-node_modules
 *.log
 
+.DS_Store
+.git
 .idea
+
+node_modules
+
+/packages/test
