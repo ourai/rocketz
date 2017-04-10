@@ -20,7 +20,6 @@
   },
   "bugs": "https://github.com/ourai/rocketz/issues",
   "main": "index.js",
-  "engines": "node >= 0.10.0",
   "bin": {
     "rocketz": "./bin/rocketz.js"
   },

@@ -11,7 +11,7 @@
     "command",
     "upload"
   ],
-  "author": "Ourai Lin <ourairyu@hotmail.com> (http://ourai.ws/)",
+  "author": "Ourai Lin <ourairyu@gmail.com> (http://ourai.ws/)",
   "repository": {
     "type": "git",
     "url": "https://github.com/ourai/rocketz.git"
@@ -28,5 +28,8 @@
   "devDependencies": {
     "babel-cli": "^6.10.1",
     "babel-preset-es2015": "^6.9.0"
+  },
+  "dependencies": {
+    "rocketz-core": "^1.0.3"
   }
 }

@@ -5,13 +5,13 @@ const fs = require("fs");
 
 const findSync = require("find-up").sync;
 
-const Uploader = require("./uploader");
 const Commander = require("./commander");
-
-const PLUGIN_TYPES = ["cdn", "command"];
-const PACKAGE_DIR = "node_modules";
+const Uploader = require("./uploader");
 
 const APP_NAME = "rocketz";
+const PACKAGE_DIR = "node_modules";
+const PLUGIN_TYPES = ["cdn", "command"];
+
 const pkgs = {};
 
 /**
