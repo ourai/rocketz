@@ -1,6 +1,6 @@
 {
   "name": "rocketz-command-upload",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Upload command for RocketZ CLI tool",
   "homepage": "https://github.com/ourai/rocketz",
   "keywords": [
@@ -30,6 +30,6 @@
     "babel-preset-es2015": "^6.9.0"
   },
   "dependencies": {
-    "rocketz-core": "^1.0.3"
+    "rocketz-core": "^1.0.4"
   }
 }

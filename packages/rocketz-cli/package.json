@@ -1,6 +1,6 @@
 {
   "name": "rocketz-cli",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "CLI tool for RocketZ",
   "homepage": "https://github.com/ourai/rocketz",
   "keywords": [
@@ -27,9 +27,9 @@
     "liftoff": "^2.2.1",
     "meow": "^3.7.0",
     "rocketz-command-init": "0.0.0",
-    "rocketz-command-upload": "0.0.0",
-    "rocketz-core": "^1.0.0",
-    "rocketz-register": "^0.1.1"
+    "rocketz-command-upload": "^0.0.1",
+    "rocketz-core": "^1.0.4",
+    "rocketz-register": "^0.1.3"
   },
   "license": "MIT",
   "devDependencies": {

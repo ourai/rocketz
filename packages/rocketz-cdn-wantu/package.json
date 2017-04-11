@@ -1,6 +1,6 @@
 {
   "name": "rocketz-cdn-wantu",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Wantu uploader for Rocketz",
   "homepage": "https://github.com/ourai/rocketz",
   "main": "index.js",
