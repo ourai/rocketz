@@ -40,8 +40,11 @@ module.exports = class Wantu extends Cloud {
       }
       else {
         cloud.failedFiles.push(file);
-
-        console.log(`${file} 上传到顽兔时发生如下错误\n`, err.code);
+        if (err) {
+          console.log(`${file} 上传到顽兔时发生如下错误\n`, err.code);
+        } else {
+          console.log(`${file} 上传到顽兔失败，返回码: ${res.statusCode}`)
+        }
       }
     });
   }
