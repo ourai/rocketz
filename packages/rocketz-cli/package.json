@@ -1,6 +1,6 @@
 {
   "name": "rocketz-cli",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "description": "CLI tool for RocketZ",
   "homepage": "https://github.com/ourai/rocketz",
   "keywords": [
@@ -25,7 +25,7 @@
     "rocketz": "./bin/rocketz.js"
   },
   "dependencies": {
-    "rocketz-core": "^0.4.6"
+    "rocketz-core": "^0.4.7"
   },
   "license": "MIT"
 }
