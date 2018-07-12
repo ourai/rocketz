@@ -24,6 +24,22 @@ descriptor.register = function( CdnFactory ) {
       this.__token = (new qiniu.rs.PutPolicy(this.space)).token();
     }
 
+    normalizeResponse( target ) {
+      let key = target.key;
+      let domain = this.domain;
+
+      return {
+          url: key ? (domain ? decodeURIComponent(qiniu.rs.makeBaseUrl(domain, key)) : `/${key}`) : ""
+        };
+    }
+
+    normalizeError( target ) {
+      return {
+          code: target.code,
+          message: target.error
+        };
+    }
+
     uploadFile( file ) {
       let localFile = path.join(this.local, file);
       let key = path.join(this.remote, file);
@@ -32,14 +48,16 @@ descriptor.register = function( CdnFactory ) {
       this.uploading++;
 
       qiniu.io.putFile(this.__token, key, localFile, extra, ( err, ret ) => {
+        let res = this.normalizeResponse(ret);
+
         this.uploaded++;
 
         if ( err ) {
           this.failedFiles.push(file);
-          this.emit("upload:fail", this, ret, err);
+          this.emit("upload:fail", this.normalizeError(err), this, res);
         }
         else {
-          this.emit("upload:success", this, ret);
+          this.emit("upload:success", res, this);
         }
       });
     }

@@ -29,6 +29,6 @@
   "dependencies": {
     "inquirer": "^1.0.3",
     "lodash": "^4.13.1",
-    "plugie": "0.0.2"
+    "plugie": "0.0.3"
   }
 }

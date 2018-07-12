@@ -1,0 +1,10 @@
+{
+  "local": "../rocketz-cli",
+  "remote": "rocketzCliTest",
+  "files": "index,cdn",
+  "exts": "js,css",
+  "deep": true,
+  "fragment": "10",
+  "retry": "3",
+  "interactive": true
+}

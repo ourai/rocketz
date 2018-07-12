@@ -9,7 +9,6 @@ const handlers = {
 
 const register = new Plugie({
     name: "rocketz",
-    types: Object.keys(handlers),
     handlers
   });
 
